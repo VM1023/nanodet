@@ -1,0 +1,51 @@
+[NanoDet][01-28 10:34:41]INFO: Setting up data...
+[NanoDet][01-28 10:34:41]INFO: Creating model...
+[NanoDet][01-28 10:34:43]INFO: Weight Averaging is enabled
+[NanoDet][01-28 10:34:49]INFO: Train|Epoch1/30|Iter0(1/5)| mem:3.03G| lr:1.00e-07| loss_qfl:0.1328| loss_bbox:0.9900| loss_dfl:0.2600| aux_loss_qfl:0.1518| aux_loss_bbox:0.5604| aux_loss_dfl:0.1472| 
+[NanoDet][01-28 10:35:14]INFO: Val|Epoch10/30|Iter50(1/1)| mem:0.235G| lr:9.54e-05| loss_qfl:1.0901| loss_bbox:1.6337| loss_dfl:0.4225| aux_loss_qfl:0.1434| aux_loss_bbox:0.6748| aux_loss_dfl:0.2680| 
+[NanoDet][01-28 10:35:14]INFO: Saving model to workspace/nanodet-plus-m_416/model_best/nanodet_model_best.pth
+[NanoDet][01-28 10:35:14]INFO: Val_metrics: {'mAP': 0, 'AP_50': 0, 'AP_75': 0, 'AP_small': 0, 'AP_m': 0, 'AP_l': 0}
+[NanoDet][01-28 10:35:16]INFO: Train|Epoch11/30|Iter50(1/5)| mem:3.06G| lr:1.00e-04| loss_qfl:0.2303| loss_bbox:0.9375| loss_dfl:0.3149| aux_loss_qfl:0.1236| aux_loss_bbox:0.6152| aux_loss_dfl:0.2547| 
+[NanoDet][01-28 10:35:37]INFO: Val|Epoch20/30|Iter100(1/1)| mem:3.37G| lr:1.75e-04| loss_qfl:0.3079| loss_bbox:0.8137| loss_dfl:0.2904| aux_loss_qfl:0.2034| aux_loss_bbox:0.5570| aux_loss_dfl:0.2476| 
+[NanoDet][01-28 10:35:37]INFO: 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.157
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.454
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.068
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.157
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.350
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.287
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.450
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.450
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.457
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.400
+
+[NanoDet][01-28 10:35:37]INFO: 
+| class         | AP50   | mAP   |
+|:--------------|:-------|:------|
+| License-Plate | 45.4   | 15.7  |
+[NanoDet][01-28 10:35:37]INFO: Saving model to workspace/nanodet-plus-m_416/model_best/nanodet_model_best.pth
+[NanoDet][01-28 10:35:37]INFO: Val_metrics: {'mAP': 0.15714254282571116, 'AP_50': 0.4542574257425742, 'AP_75': 0.06845827439886847, 'AP_small': -1.0, 'AP_m': 0.1572905399783676, 'AP_l': 0.35}
+[NanoDet][01-28 10:35:39]INFO: Train|Epoch21/30|Iter100(1/5)| mem:3.37G| lr:2.00e-04| loss_qfl:0.1560| loss_bbox:0.7502| loss_dfl:0.2784| aux_loss_qfl:0.1594| aux_loss_bbox:0.4860| aux_loss_dfl:0.2210| 
+[NanoDet][01-28 10:36:00]INFO: Val|Epoch30/30|Iter150(1/1)| mem:3.37G| lr:5.00e-05| loss_qfl:0.5410| loss_bbox:0.6973| loss_dfl:0.2674| aux_loss_qfl:0.2430| aux_loss_bbox:0.4956| aux_loss_dfl:0.2136| 
+[NanoDet][01-28 10:36:00]INFO: 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.248
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.758
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.039
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.247
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.400
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.325
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.425
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.425
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.429
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.400
+
+[NanoDet][01-28 10:36:00]INFO: 
+| class         | AP50   | mAP   |
+|:--------------|:-------|:------|
+| License-Plate | 75.8   | 24.8  |
+[NanoDet][01-28 10:36:00]INFO: Saving model to workspace/nanodet-plus-m_416/model_best/nanodet_model_best.pth
+[NanoDet][01-28 10:36:01]INFO: Val_metrics: {'mAP': 0.2476194762333376, 'AP_50': 0.758132956152758, 'AP_75': 0.03861386138613861, 'AP_small': -1.0, 'AP_m': 0.24745638849599244, 'AP_l': 0.39999999999999997}
