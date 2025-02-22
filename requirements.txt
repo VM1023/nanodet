@@ -17,3 +17,4 @@ torchmetrics
 torchvision
 tqdm
 streamlit
+paddleocr
