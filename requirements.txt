@@ -18,3 +18,4 @@ torchvision
 tqdm
 streamlit
 paddleocr
+paddlepaddle==2.4.0
