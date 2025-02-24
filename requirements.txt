@@ -1,11 +1,10 @@
 Cython
 imagesize
 matplotlib
-numpy==1.23.5  # Pinning to a compatible version
+numpy
 omegaconf>=2.0.1
 onnx
 onnx-simplifier
-opencv-contrib-python
 pyaml
 pycocotools
 pytorch-lightning>=1.9.0,<2.0.0
@@ -20,3 +19,18 @@ streamlit
 paddleocr>=2.0.1
 paddlepaddle==2.6.2 
 imgaug>=0.4.0  # Ensure compatibility with numpy
+shapely
+scikit-image
+pyclipper
+lmdb
+tqdm
+rapidfuzz
+opencv-python
+opencv-contrib-python
+Pillow
+pyyaml
+requests
+albumentations==1.4.10
+# to be compatible with albumentations
+albucore==0.0.13
+packaging
