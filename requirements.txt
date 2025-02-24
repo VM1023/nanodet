@@ -5,7 +5,8 @@ numpy
 omegaconf>=2.0.1
 onnx
 onnx-simplifier
-opencv-python
+# opencv-python  # Removed this line
+Pillow  # Added this line
 pyaml
 pycocotools
 pytorch-lightning>=1.9.0,<2.0.0
