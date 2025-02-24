@@ -1,10 +1,9 @@
 import os
 import time
-import cv2
 import torch
 import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
+from PIL import Image
 from paddleocr import PaddleOCR
 from nanodet.data.batch_process import stack_batch_img
 from nanodet.data.collate import naive_collate
@@ -28,10 +27,11 @@ class Predictor(object):
         img_info = {"id": 0}
         if isinstance(img, str):
             img_info["file_name"] = os.path.basename(img)
-            img = cv2.imread(img)
+            img = Image.open(img).convert("RGB")  # Use Pillow to open the image
         else:
             img_info["file_name"] = None
 
+        img = np.array(img)  # Convert Pillow image to NumPy array
         height, width = img.shape[:2]
         img_info["height"] = height
         img_info["width"] = width
@@ -83,7 +83,7 @@ def run_inference_for_image(config_path, model_path, image_path, save_result=Fal
 
         if save_result:
             save_file_name = os.path.join(save_folder, os.path.basename(image_name))
-            cv2.imwrite(save_file_name, result_image)
+            Image.fromarray(result_image).save(save_file_name)  # Save using Pillow
 
         result_images.append(result_image)
 
