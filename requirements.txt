@@ -5,7 +5,7 @@ numpy==1.23.5  # Pinning to a compatible version
 omegaconf>=2.0.1
 onnx
 onnx-simplifier
-opencv-python-headless
+pillow  # Replacing OpenCV with Pillow
 pyaml
 pycocotools
 pytorch-lightning>=1.9.0,<2.0.0
