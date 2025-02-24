@@ -4,7 +4,6 @@ import cv2
 import torch
 import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
 from paddleocr import PaddleOCR
 from nanodet.data.batch_process import stack_batch_img
 from nanodet.data.collate import naive_collate
