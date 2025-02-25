@@ -15,7 +15,7 @@ from nanodet.util.path import mkdir
 
 # Define the Predictor class
 class Predictor(object):
-    def __init__(self, cfg, model_path, logger, device="cuda:0"):
+    def __init__(self, cfg, model_path, logger, device="cpu"):  # Changed to "cpu"
         self.cfg = cfg
         self.device = device
         model = build_model(cfg.model)
@@ -66,7 +66,7 @@ def get_image_list(path):
 def run_inference_for_image(config_path, model_path, image_path, save_result=False, save_dir='./inference_results'):
     load_config(cfg, config_path)
     logger = Logger(local_rank=0, use_tensorboard=False)
-    predictor = Predictor(cfg, model_path, logger, device="cuda:0")
+    predictor = Predictor(cfg, model_path, logger, device="cpu")  # Changed to "cpu"
     
     image_names = get_image_list(image_path)
     image_names.sort()
@@ -106,7 +106,7 @@ def extract_license_plate_text(image):
     if license_plate_box is not None:
         points = np.array(license_plate_box, dtype=np.int32)
         x_min = np.min(points[:, 0])
-        x_max = np.max(points[:, 0])
+        x_max = np.max(points[:, 0 ])
         y_min = np.min(points[:, 1])
         y_max = np.max(points[:, 1])
         cropped_license_plate = image[y_min:y_max, x_min:x_max]
