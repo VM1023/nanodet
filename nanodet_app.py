@@ -4,7 +4,6 @@ import cv2
 import torch
 import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
 from paddleocr import PaddleOCR
 from nanodet.data.batch_process import stack_batch_img
 from nanodet.data.collate import naive_collate
@@ -15,7 +14,7 @@ from nanodet.util.path import mkdir
 
 # Define the Predictor class
 class Predictor(object):
-    def __init__(self, cfg, model_path, logger, device="cpu"):  # Changed to "cpu"
+    def __init__(self, cfg, model_path, logger, device="cpu"):
         self.cfg = cfg
         self.device = device
         model = build_model(cfg.model)
@@ -66,7 +65,7 @@ def get_image_list(path):
 def run_inference_for_image(config_path, model_path, image_path, save_result=False, save_dir='./inference_results'):
     load_config(cfg, config_path)
     logger = Logger(local_rank=0, use_tensorboard=False)
-    predictor = Predictor(cfg, model_path, logger, device="cpu")  # Changed to "cpu"
+    predictor = Predictor(cfg, model_path, logger, device="cpu")
     
     image_names = get_image_list(image_path)
     image_names.sort()
@@ -106,16 +105,16 @@ def extract_license_plate_text(image):
     if license_plate_box is not None:
         points = np.array(license_plate_box, dtype=np.int32)
         x_min = np.min(points[:, 0])
-        x_max = np.max(points[:, 0 ])
+        x_max = np.max(points[:, 0])
         y_min = np.min(points[:, 1])
-        y_max = np.max(points[:, 1])
+ y_max = np.max(points[:, 1])
         cropped_license_plate = image[y_min:y_max, x_min:x_max]
         return cropped_license_plate, license_plate_text
     return None, None
 
 # Streamlit UI
 def main():
-    st.title("Car Damage Assessment")
+    st.title("OCR License Plate")
 
     config_path = 'config/nanodet-plus-m_416-yolo.yml'
     model_path = 'workspace/nanodet-plus-m_416/model_best/model_best.ckpt'
@@ -137,7 +136,9 @@ def main():
         st.image(result_images[0], caption="Processed Image", use_column_width=True)
 
         if cropped_license_plate is not None:
-            st.image(cropped_license_plate, caption=f"Extracted License Plate: {license_plate_text}", use_column_width=True)
+            st.image(cropped_license_plate, caption="Extracted License Plate", use_column_width=True)
+            # Display the extracted license plate text in a larger font
+            st.markdown(f"<h1 style='text-align: center; color: green;'>{license_plate_text}</h1>", unsafe_allow_html=True)
         else:
             st.write("No License Plate Detected")
 
