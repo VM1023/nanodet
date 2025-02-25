@@ -104,7 +104,8 @@ def extract_license_plate_text(image):
                 license_plate_text = text
                 license_plate_box = word_info[0]
 
-    if license_plate_box is not None points = np.array(license_plate_box, dtype=np.int32)
+    if license_plate_box is not None:
+        points = np.array(license_plate_box, dtype=np.int32)
         x_min = np.min(points[:, 0])
         x_max = np.max(points[:, 0])
         y_min = np.min(points[:, 1])
