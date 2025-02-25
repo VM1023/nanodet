@@ -43,7 +43,7 @@ class Predictor(object):
             results = self.model.inference(meta)
         return meta, results
 
-    def visualize(self, dets, meta, class_names, score_thres, wait=0):
+    def visualize(self, dets, meta, class_names, score_thres):
         # Only visualize license plate detections
         result_img = meta["raw_img"][0].copy()
         for det in dets:
@@ -65,10 +65,10 @@ def get_image_list(path):
         image_names.append(path)
     return image_names
 
-def run_inference_for_image(config_path, model_path, image_path, save_result=False, save_dir='./inference_results'):
+def run_inference_for_image(config_path, model_path, image_path, save_result=False, save_dir='./inference_results', device="cuda:0"):
     load_config(cfg, config_path)
     logger = Logger(local_rank=0, use_tensorboard=False)
-    predictor = Predictor(cfg, model_path, logger, device="cuda:0")
+    predictor = Predictor(cfg, model_path, logger, device=device)
     
     image_names = get_image_list(image_path)
     image_names.sort()
@@ -125,6 +125,13 @@ def main():
     model_path = 'workspace/nanodet-plus-m_416/model_best/model_best.ckpt'  # Ensure this model is trained for license plates
     save_dir = './inference_results'
 
+    # Check for CUDA availability
+    if not torch.cuda.is_available():
+        st.warning("CUDA is not available. The model will run on CPU.")
+        device = "cpu"
+    else:
+        device = "cuda:0"
+
     image_file = st.file_uploader("Upload image file", type=["jpg", "jpeg", "png", "bmp", "webp"])
 
     if image_file is not None:
@@ -135,15 +142,18 @@ def main():
         save_result = st.checkbox("Save Inference Results", value=False)
 
         with st.spinner("Running inference..."):
-            result_images = run_inference_for_image(config_path, model_path, image_path, save_result, save_dir)
-            cropped_license_plate, license_plate_text = extract_license_plate_text(result_images[0])
+            try:
+                result_images = run_inference_for_image(config_path, model_path, image_path, save_result, save_dir, device)
+                cropped_license_plate, license_plate_text = extract_license_plate_text(result_images[0])
 
-        st.image(result_images[0], caption="Processed Image", use_column_width=True)
+                st.image(result_images[0], caption="Processed Image", use_column_width=True)
 
-        if cropped_license_plate is not None:
-            st.image(cropped_license_plate, caption=f"Extracted License Plate: {license_plate_text}", use_column_width=True)
-        else:
-            st.write("No License Plate Detected")
+                if cropped_license_plate is not None:
+                    st.image(cropped_license_plate, caption=f"Extracted License Plate: {license_plate_text}", use_column_width=True)
+                else:
+                    st.write("No License Plate Detected")
+            except Exception as e:
+                st.error(f"An error occurred: {str(e)}")
 
 if __name__ == "__main__":
     main()
