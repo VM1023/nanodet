@@ -127,7 +127,6 @@ def main():
 
     # Check for CUDA availability
     if not torch.cuda.is_available():
-        st.warning("CUDA is not available. The model will run on CPU.")
         device = "cpu"
     else:
         device = "cuda:0"
