@@ -14,7 +14,7 @@ from nanodet.util.path import mkdir
 
 # Define the Predictor class
 class Predictor(object):
-    def __init__(self, cfg, model_path, logger, device="cpu"):
+    def __init__(self, cfg, model_path, logger, device="cuda:0"):
         self.cfg = cfg
         self.device = device
         model = build_model(cfg.model)
@@ -44,9 +44,12 @@ class Predictor(object):
         return meta, results
 
     def visualize(self, dets, meta, class_names, score_thres, wait=0):
-        result_img = self.model.head.show_result(
-            meta["raw_img"][0], dets, class_names, score_thres=score_thres, show=False
-        )
+        # Only visualize license plate detections
+        result_img = meta["raw_img"][0].copy()
+        for det in dets:
+            if det[-1] >= score_thres:  # Check if score is above threshold
+                bbox = det[:4].astype(int)
+                cv2.rectangle(result_img, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 255, 0), 2)
         return result_img
 
 def get_image_list(path):
@@ -65,7 +68,7 @@ def get_image_list(path):
 def run_inference_for_image(config_path, model_path, image_path, save_result=False, save_dir='./inference_results'):
     load_config(cfg, config_path)
     logger = Logger(local_rank=0, use_tensorboard=False)
-    predictor = Predictor(cfg, model_path, logger, device="cpu")
+    predictor = Predictor(cfg, model_path, logger, device="cuda:0")
     
     image_names = get_image_list(image_path)
     image_names.sort()
@@ -98,7 +101,7 @@ def extract_license_plate_text(image):
     for line in ocr_results:
         for word_info in line:
             text = word_info[1][0]
-            if len(text) >= 5 and len(text) <= 10:
+            if len(text) >= 5 and len(text) <= 10:  # Adjust this based on your license plate format
                 license_plate_text = text
                 license_plate_box = word_info[0]
 
@@ -107,17 +110,19 @@ def extract_license_plate_text(image):
         x_min = np.min(points[:, 0])
         x_max = np.max(points[:, 0])
         y_min = np.min(points[:, 1])
- y_max = np.max(points[:])
+        y_max = np.max(points[:, 1])
         cropped_license_plate = image[y_min:y_max, x_min:x_max]
+        # Resize the cropped license plate for better visibility
+        cropped_license_plate = cv2.resize(cropped_license_plate, (400, 100))  # Adjust size as needed
         return cropped_license_plate, license_plate_text
     return None, None
 
 # Streamlit UI
 def main():
-    st.title("OCR License Plate")
+    st.title("License Plate Detection and OCR")
 
-    config_path = 'config/nanodet-plus-m_416-yolo.yml'
-    model_path = 'workspace/nanodet-plus-m_416/model_best/model_best.ckpt'
+    config_path = 'config/nanodet-plus-m_416-yolo.yml'  # Ensure this config is for license plate detection
+    model_path = 'workspace/nanodet-plus-m_416/model_best/model_best.ckpt'  # Ensure this model is trained for license plates
     save_dir = './inference_results'
 
     image_file = st.file_uploader("Upload image file", type=["jpg", "jpeg", "png", "bmp", "webp"])
@@ -136,9 +141,7 @@ def main():
         st.image(result_images[0], caption="Processed Image", use_column_width=True)
 
         if cropped_license_plate is not None:
-            st.image(cropped_license_plate, caption="Extracted License Plate", use_column_width=True)
-            # Display the extracted license plate text in a larger font
-            st.markdown(f"<h1 style='text-align: center; color: green;'>{license_plate_text}</h1>", unsafe_allow_html=True)
+            st.image(cropped_license_plate, caption=f"Extracted License Plate: {license_plate_text}", use_column_width=True)
         else:
             st.write("No License Plate Detected")
 
