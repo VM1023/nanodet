@@ -144,14 +144,19 @@ def main():
         with st.spinner("Running inference..."):
             try:
                 result_images = run_inference_for_image(config_path, model_path, image_path, save_result, save_dir, device)
-                cropped_license_plate, license_plate_text = extract_license_plate_text(result_images[0])
+                
+                # Check if results are valid
+                if result_images and len(result_images) > 0:
+                    cropped_license_plate, license_plate_text = extract_license_plate_text(result_images[0])
 
-                st.image(result_images[0], caption="Processed Image", use_column_width=True)
+                    st.image(result_images[0], caption="Processed Image", use_column_width=True)
 
-                if cropped_license_plate is not None:
-                    st.image(cropped_license_plate, caption=f"Extracted License Plate: {license_plate_text}", use_column_width=True)
+                    if cropped_license_plate is not None:
+                        st.image(cropped_license_plate, caption=f"Extracted License Plate: {license_plate_text}", use_column_width=True)
+                    else:
+                        st.write("No License Plate Detected")
                 else:
-                    st.write("No License Plate Detected")
+                    st.write("No results returned from the model.")
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
 
