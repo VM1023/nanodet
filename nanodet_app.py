@@ -107,7 +107,7 @@ def extract_license_plate_text(image):
         x_min = np.min(points[:, 0])
         x_max = np.max(points[:, 0])
         y_min = np.min(points[:, 1])
- y_max = np.max(points[:])
+ y_max = np.max(points[:, 1])
         cropped_license_plate = image[y_min:y_max, x_min:x_max]
         return cropped_license_plate, license_plate_text
     return None, None
