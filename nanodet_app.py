@@ -97,7 +97,7 @@ def extract_license_plate_text(image):
 
     for line in ocr_results:
         for word_info in line:
-            text = word_info[1][0]
+ text = word_info[1][0]
             if len(text) >= 5 and len(text) <= 10:
                 license_plate_text = text
                 license_plate_box = word_info[0]
@@ -137,7 +137,6 @@ def main():
 
         if cropped_license_plate is not None:
             st.image(cropped_license_plate, caption="Extracted License Plate", use_column_width=True)
-            # Display the extracted license plate text in a larger font
             st.markdown(f"<h1 style='text-align: center; color: green;'>{license_plate_text}</h1>", unsafe_allow_html=True)
         else:
             st.write("No License Plate Detected")
