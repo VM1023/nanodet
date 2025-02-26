@@ -4,6 +4,7 @@ import cv2
 import torch
 import streamlit as st
 import numpy as np
+import matplotlib.pyplot as plt
 from paddleocr import PaddleOCR
 from nanodet.data.batch_process import stack_batch_img
 from nanodet.data.collate import naive_collate
@@ -14,7 +15,7 @@ from nanodet.util.path import mkdir
 
 # Define the Predictor class
 class Predictor(object):
-    def __init__(self, cfg, model_path, logger, device="cpu"):
+    def __init__(self, cfg, model_path, logger, device="cuda:0"):
         self.cfg = cfg
         self.device = device
         model = build_model(cfg.model)
@@ -65,7 +66,7 @@ def get_image_list(path):
 def run_inference_for_image(config_path, model_path, image_path, save_result=False, save_dir='./inference_results'):
     load_config(cfg, config_path)
     logger = Logger(local_rank=0, use_tensorboard=False)
-    predictor = Predictor(cfg, model_path, logger, device="cpu")
+    predictor = Predictor(cfg, model_path, logger, device="cuda:0")
     
     image_names = get_image_list(image_path)
     image_names.sort()
@@ -114,7 +115,7 @@ def extract_license_plate_text(image):
 
 # Streamlit UI
 def main():
-    st.title("OCR License Plate Detection")
+    st.title("Car Damage Assessment")
 
     config_path = 'config/nanodet-plus-m_416-yolo.yml'
     model_path = 'workspace/nanodet-plus-m_416/model_best/model_best.ckpt'
@@ -131,22 +132,14 @@ def main():
 
         with st.spinner("Running inference..."):
             result_images = run_inference_for_image(config_path, model_path, image_path, save_result, save_dir)
+            cropped_license_plate, license_plate_text = extract_license_plate_text(result_images[0])
 
-            # Check if result_images is not empty
-            if result_images:
-                # Preprocess the result image before OCR
-                preprocessed_image = preprocess_image(result_images[0])
-                cropped_license_plate, license_plate_text = extract_license_plate_text(preprocessed_image)
+        st.image(result_images[0], caption="Processed Image", use_column_width=True)
 
-                st.image(result_images[0], caption="Processed Image", use_column_width=True)
-
-                if cropped_license_plate is not None:
-                    st.image(cropped_license_plate, caption=f"Extracted License Plate: {license_plate_text}", use_column_width=True)
-                    st.markdown(f"<h1 style='text-align: center; color: green;'>{license_plate_text}</h1>", unsafe_allow_html=True)
-                else:
-                    st.write("No License Plate Detected")
-            else:
-                st.write("No images were processed. Please check the input image.")
+        if cropped_license_plate is not None:
+            st.image(cropped_license_plate, caption=f"Extracted License Plate: {license_plate_text}", use_column_width=True)
+        else:
+            st.write("No License Plate Detected")
 
 if __name__ == "__main__":
     main()
