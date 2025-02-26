@@ -131,17 +131,22 @@ def main():
 
         with st.spinner("Running inference..."):
             result_images = run_inference_for_image(config_path, model_path, image_path, save_result, save_dir)
-            # Preprocess the result image before OCR
-            preprocessed_image = preprocess_image(result_images[0])
-            cropped_license_plate, license_plate_text = extract_license_plate_text(preprocessed_image)
 
-        st.image(result_images[0], caption="Processed Image", use_column_width=True)
+            # Check if result_images is not empty
+            if result_images:
+                # Preprocess the result image before OCR
+                preprocessed_image = preprocess_image(result_images[0])
+                cropped_license_plate, license_plate_text = extract_license_plate_text(preprocessed_image)
 
-        if cropped_license_plate is not None:
-            st.image(cropped_license_plate, caption=f"Extracted License Plate: {license_plate_text}", use_column_width=True)
-            st.markdown(f"<h1 style='text-align: center; color: green;'>{license_plate_text}</h1>", unsafe_allow_html=True)
-        else:
-            st.write("No License Plate Detected")
+                st.image(result_images[0], caption="Processed Image", use_column_width=True)
+
+                if cropped_license_plate is not None:
+                    st.image(cropped_license_plate, caption=f"Extracted License Plate: {license_plate_text}", use_column_width=True)
+                    st.markdown(f"<h1 style='text-align: center; color: green;'>{license_plate_text}</h1>", unsafe_allow_html=True)
+                else:
+                    st.write("No License Plate Detected")
+            else:
+                st.write("No images were processed. Please check the input image.")
 
 if __name__ == "__main__":
     main()
