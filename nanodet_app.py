@@ -12,6 +12,9 @@ from nanodet.model.arch import build_model
 from nanodet.util import Logger, cfg, load_config, load_model_weight
 from nanodet.util.path import mkdir
 
+# Initialize PaddleOCR once
+ocr = PaddleOCR(use_angle_cls=True, lang='en')
+
 # Define the Predictor class
 class Predictor(object):
     def __init__(self, cfg, model_path, logger, device="cpu"):
@@ -89,7 +92,6 @@ def run_inference_for_image(config_path, model_path, image_path, save_result=Fal
     return result_images
 
 def extract_license_plate_text(image):
-    ocr = PaddleOCR(use_angle_cls=True, lang='en')
     ocr_results = ocr.ocr(image, cls=True)
 
     license_plate_text = ""
@@ -97,7 +99,7 @@ def extract_license_plate_text(image):
 
     for line in ocr_results:
         for word_info in line:
- text = word_info[1][0]
+            text = word_info[1][0]
             if len(text) >= 5 and len(text) <= 10:
                 license_plate_text = text
                 license_plate_box = word_info[0]
@@ -114,7 +116,7 @@ def extract_license_plate_text(image):
 
 # Streamlit UI
 def main():
-    st.title("OCR License Plate")
+    st.title("OCR License Plate Detection")
 
     config_path = 'config/nanodet-plus-m_416-yolo.yml'
     model_path = 'workspace/nanodet-plus-m_416/model_best/model_best.ckpt'
@@ -136,7 +138,7 @@ def main():
         st.image(result_images[0], caption="Processed Image", use_column_width=True)
 
         if cropped_license_plate is not None:
-            st.image(cropped_license_plate, caption="Extracted License Plate", use_column_width=True)
+            st.image(cropped_license_plate, caption=f"Extracted License Plate: {license_plate_text}", use_column_width=True)
             st.markdown(f"<h1 style='text-align: center; color: green;'>{license_plate_text}</h1>", unsafe_allow_html=True)
         else:
             st.write("No License Plate Detected")
