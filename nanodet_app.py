@@ -97,7 +97,7 @@ def extract_license_plate_text(image):
 
     for line in ocr_results:
         for word_info in line:
- text = word_info[1][0]
+            text = word_info[1][0]
             if len(text) >= 5 and len(text) <= 10:
                 license_plate_text = text
                 license_plate_box = word_info[0]
