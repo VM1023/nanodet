@@ -102,5 +102,5 @@ def main():
         else:
             st.error("❌ No License Plate Detected")
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     main()
