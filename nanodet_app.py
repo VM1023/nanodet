@@ -1,58 +1,100 @@
 import os
 import cv2
-import numpy as np
 import streamlit as st
+from PIL import Image
+from ultralytics import YOLO
 from paddleocr import PaddleOCR
+import numpy as np
 
-# Function to extract license plate text
-def extract_license_plate_text(image):
-    ocr = PaddleOCR(use_angle_cls=True, lang='en')
-    ocr_results = ocr.ocr(image, cls=True)
+# Load Models
+@st.cache_resource
+def load_yolo_model():
+    return YOLO("Model/yolov11n_best.pt")  # Load YOLO Model
 
+@st.cache_resource
+def load_ocr_model():
+    return PaddleOCR(use_angle_cls=True, lang='en')  # Load PaddleOCR Model
+
+# Initialize models
+yolo_model = load_yolo_model()
+ocr_model = load_ocr_model()
+
+# Function to perform object detection and crop license plate
+def detect_and_crop(image_path):
+    # Read the image
+    original_image = cv2.imread(image_path)
+    results = yolo_model.predict(source=image_path, imgsz=640)
+    
+    cropped_images = []
+    for r in results:
+        boxes = r.boxes  # Detected bounding boxes
+        
+        for box in boxes:
+            # Extract coordinates and class
+            x1, y1, x2, y2 = map(int, box.xyxy[0])  # Bounding box coordinates
+            cls = int(box.cls[0])  # Class of the object
+            
+            # Check if the detected class is for license plates (assuming class 0 is license plate)
+            if cls == 0:
+                # Crop the detected region
+                cropped_img = original_image[y1:y2, x1:x2]
+                cropped_images.append(cropped_img)
+                
+                # Save temporarily for OCR
+                cv2.imwrite("temp_license_plate.jpg", cropped_img)
+    return cropped_images
+
+# Function to run OCR and extract text
+def run_ocr(image_path):
+    ocr_output = ocr_model.ocr(image_path, cls=True)
     license_plate_text = ""
-    license_plate_box = None
-
-    for line in ocr_results:
+    
+    for line in ocr_output:
         for word_info in line:
             text = word_info[1][0]
             if len(text) >= 5 and len(text) <= 10:  # Assuming license plates have 5-10 characters
                 license_plate_text = text
-                license_plate_box = word_info[0]
+                break  # Stop after finding the first valid license plate text
+        if license_plate_text:
+            break  # Stop if we found a valid text
 
-    if license_plate_box is not None:
-        points = np.array(license_plate_box, dtype=np.int32)
-        x_min = np.min(points[:, 0])
-        x_max = np.max(points[:, 0])
-        y_min = np.min(points[:, 1])
-        y_max = np.max(points[:, 1])
-        cropped_license_plate = image[y_min:y_max, x_min:x_max]
-        return cropped_license_plate, license_plate_text
-    return None, None
+    return license_plate_text
 
-# Streamlit UI
+# Streamlit App Interface
 def main():
-    st.title("License Plate OCR")
+    st.title("License Plate Detection and OCR")
+    st.write("### Upload an Image to Detect and Read License Plate")
 
-    image_file = st.file_uploader("Upload image file", type=["jpg", "jpeg", "png", "bmp", "webp"])
+    # File uploader
+    uploaded_image = st.file_uploader("Choose an Image", type=["jpg", "jpeg", "png"])
 
-    if image_file is not None:
-        image_path = "./temp_image.jpg"
+    if uploaded_image:
+        # Save uploaded image temporarily
+        image_path = "uploaded_image.jpg"
         with open(image_path, "wb") as f:
-            f.write(image_file.read())
-
-        # Read the uploaded image
-        image = cv2.imread(image_path)
-
-        with st.spinner("Extracting license plate..."):
-            cropped_license_plate, license_plate_text = extract_license_plate_text(image)
-
-        st.image(image, caption="Uploaded Image", use_column_width=True)
-
-        if cropped_license_plate is not None:
-            st.image(cropped_license_plate, caption="Extracted License Plate", use_column_width=True)
-            st.markdown(f"<h1 style='text-align: center; color: green;'>{license_plate_text}</h1>", unsafe_allow_html=True)
+            f.write(uploaded_image.getbuffer())
+        
+        # Display uploaded image
+        st.image(Image.open(image_path), caption="Uploaded Image", use_container_width=True)
+        
+        # Perform detection and cropping
+        st.write("### Detecting License Plate...")
+        cropped_images = detect_and_crop(image_path)
+        
+        if cropped_images:
+            st.write("### Cropped License Plate Region(s):")
+            for idx, cropped_img in enumerate(cropped_images):
+                # Convert to RGB for display
+                cropped_img_rgb = cv2.cvtColor(cropped_img, cv2.COLOR_BGR2RGB)
+                st.image(cropped_img_rgb, caption=f"Cropped License Plate {idx + 1}", use_container_width=False)
+                
+                # Save and run OCR
+                cv2.imwrite(f"cropped_license_plate_{idx}.jpg", cropped_img)
+                st.write("#### Performing OCR on Cropped License Plate...")
+                license_plate_text = run_ocr(f"cropped_license_plate_{idx}.jpg")
+                st.write(f"**Detected License Plate Text**: {license_plate_text}")
         else:
-            st.write("No License Plate Detected")
+            st.write("No License Plate Detected. Please try another image.")
 
 if __name__ == "__main__":
     main()
