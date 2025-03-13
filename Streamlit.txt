@@ -1,0 +1,181 @@
+import os
+import time
+import cv2
+import torch
+import numpy as np
+import matplotlib.pyplot as plt
+from nanodet.data.batch_process import stack_batch_img
+from nanodet.data.collate import naive_collate
+from nanodet.data.transform import Pipeline
+from nanodet.model.arch import build_model
+from nanodet.util import Logger, cfg, load_config, load_model_weight
+from nanodet.util.path import mkdir
+from azure.cognitiveservices.vision.computervision import ComputerVisionClient
+from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
+from msrest.authentication import CognitiveServicesCredentials
+from io import BytesIO
+import re
+
+image_ext = [".jpg", ".jpeg", ".webp", ".bmp", ".png"]
+CONFIDENCE_THRESHOLD = 0.50
+
+def initialize_azure_client():
+    api_key = os.getenv("AZURE_API_KEY")
+    endpoint = os.getenv("AZURE_ENDPOINT")
+    if not api_key or not endpoint:
+        raise ValueError("Azure API Key or Endpoint is missing!")
+    return ComputerVisionClient(endpoint, CognitiveServicesCredentials(api_key))
+
+def extract_license_plate_text(ocr_text):
+    if not ocr_text or "Error" in ocr_text or "No text" in ocr_text:
+        return ocr_text
+    lines = ocr_text.strip().split('\n')
+    cleaned_lines = []
+    plate_pattern = r'([A-Z]{2}\s*[0-9]{1,2}\s*[A-Z]{1,2}\s*[0-9]{4})'
+    for line in lines:
+        match = re.search(plate_pattern, line)
+        if match:
+            cleaned_lines.append(match.group(1).strip())
+    return ' '.join(cleaned_lines) if cleaned_lines else "No valid license plate format detected"
+
+def extract_text_from_image(client, image):
+    try:
+        _, buffer = cv2.imencode(".jpg", image)
+        image_stream = BytesIO(buffer.tobytes())
+        response = client.read_in_stream(image_stream, raw=True)
+        operation_id = response.headers.get("Operation-Location").split("/")[-1]
+        max_wait_time = 30
+        start_time = time.time()
+        while True:
+            result = client.get_read_result(operation_id)
+            if result.status in [OperationStatusCodes.succeeded, OperationStatusCodes.failed]:
+                break
+            if time.time() - start_time > max_wait_time:
+                return "Error: OCR processing timed out."
+            time.sleep(2)
+        extracted_text = "\n".join(line.text for page in result.analyze_result.read_results for line in page.lines) if result.status == OperationStatusCodes.succeeded else "No text found."
+        return extract_license_plate_text(extracted_text) if extracted_text else extracted_text
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+def crop_detected_objects(image, dets, class_names, score_thres=0.5):
+    return [(image[int(y0):int(y1), int(x0):int(x1)], class_names[label], score, (x0, y0, x1, y1))
+            for label in range(len(class_names))
+            for bbox in dets[label] if (score := bbox[-1]) > score_thres
+            for x0, y0, x1, y1 in [bbox[:4]]]
+
+def run_inference_for_image(config_path, model_path, image_path, azure_client=None, save_result=False, save_dir='./demo_results', score_thres=0.5):
+    load_config(cfg, config_path)
+    logger = Logger(local_rank=0, use_tensorboard=False)
+    predictor = Predictor(cfg, model_path, logger, device="cuda:0", score_thres=score_thres)
+    image_names = sorted(get_image_list(image_path))
+    
+    save_folder = os.path.join(save_dir, time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())) if save_result else None
+    mkdir(local_rank=0, path=save_folder) if save_result else None
+    crop_folder = os.path.join(save_folder, "crops") if save_result else None
+    mkdir(local_rank=0, path=crop_folder) if save_result else None
+
+    all_cropped_objects = []
+    result_images = []  # Initialize result_images here
+
+    for image_name in image_names:
+        meta, res = predictor.inference(image_name)
+        raw_img = meta["raw_img"][0]
+        result_image = predictor.visualize(res[0], meta, cfg.class_names)
+        cropped_objects = crop_detected_objects(raw_img, res[0], cfg.class_names, score_thres)
+
+        if azure_client:
+            cropped_objects_with_ocr = [(crop, class_name, score, bbox, extract_text_from_image(azure_client, crop)) for crop, class_name, score, bbox in cropped_objects]
+            all_cropped_objects.append((os.path.basename(image_name), cropped_objects_with_ocr))
+        else:
+            all_cropped_objects.append((os.path.basename(image_name), cropped_objects))
+
+        if save_result:
+            cv2.imwrite(os.path.join(save_folder, os.path.basename(image_name)), result_image)
+            for i, item in enumerate(all_cropped_objects[-1][1]):
+                crop, class_name, score, _, ocr_text = item if azure_client else item + ("OCR not performed",)
+                with open(os.path.join(crop_folder, f"{os.path.splitext(os.path.basename(image_name))[0]}_{class_name}_{i}_{score:.2f}.txt"), 'w') as f:
+                    f.write(ocr_text)
+                cv2.imwrite(os.path.join(crop_folder, f"{os.path.splitext(os.path.basename(image_name))[0]}_{class_name}_{i}_{score:.2f}.jpg"), crop)
+
+        result_images.append(result_image)  # Append the result image to the list
+
+    return result_images, all_cropped_objects
+
+class Predictor:
+    def __init__(self, cfg, model_path, logger, device="cuda:0", score_thres=0.5):
+        self.cfg = cfg
+        self.device = device
+        self.score_thres = score_thres
+        model = build_model(cfg.model)
+        load_model_weight(model, torch.load(model_path, map_location=lambda storage, loc: storage), logger)
+        self.model = model.to(device).eval()
+        self.pipeline = Pipeline(cfg.data.val.pipeline, cfg.data.val.keep_ratio)
+
+    def inference(self, img):
+        img_info = {"id": 0, "file_name": os.path.basename(img) if isinstance(img, str) else None}
+        img = cv2.imread(img) if isinstance(img, str) else img
+        img_info.update({"height": img.shape[0], "width": img.shape[1]})
+        meta = dict(img_info=img_info, raw_img=img, img=img)
+        meta = self.pipeline(None, meta, self.cfg.data.val.input_size)
+        meta["img"] = torch.from_numpy(meta["img"].transpose(2, 0, 1)).to(self.device)
+        meta = naive_collate([meta])
+        meta["img"] = stack_batch_img(meta["img"], divisible=32)
+        with torch.no_grad():
+            return meta, self.model.inference(meta)
+
+    def visualize(self, dets, meta, class_names):
+        return self.model.head.show_result(meta["raw_img"][0], dets, class_names, score_thres=self.score_thres, show=False)
+
+def get_image_list(path):
+    return [os.path.join(maindir, filename) for maindir, _, filelist in os.walk(path) for filename in filelist if os.path.splitext(filename)[1] in image_ext] if os.path.isdir(path) else [path]
+
+def display_crops_with_ocr(cropped_objects):
+    if not cropped_objects:
+        print("No objects detected!")
+        return
+    cols, rows = min(3, len(cropped_objects)), (len(cropped_objects) + 2) // 3
+    fig = plt.figure(figsize=(cols * 5, rows * 6))
+    for i, item in enumerate(cropped_objects):
+        crop, class_name, score, bbox, ocr_text = item if len(item) == 5 else (*item, "OCR not performed")
+        ax = fig.add_subplot(rows, cols, i + 1)
+        ax.imshow(cv2.cvtColor(crop, cv2.COLOR_BGR2RGB))
+        ax.axis('off')
+        ax.set_title(f"{class_name}: {score:.2f}\nSize: {bbox[2]-bbox[0]}x{bbox[3]-bbox[1]}px")
+        ax.text(0.5, -0.05, f"OCR: {ocr_text[:197]}...", wrap=True, horizontalalignment='center', verticalalignment='top', transform=ax.transAxes, fontsize=min(10, max(6, 10 - len(ocr_text) // 100)), bbox=dict(facecolor='white', alpha=0.7))
+    plt.tight_layout()
+    plt.subplots_adjust(hspace=0.4)
+    plt.show()
+
+# Example usage
+config_path = 'config/nanodet-plus-m_416-yolo.yml'
+model_path = 'workspace/nanodet-plus-m_416/model_best/nanodet_model_best.pth'
+image_path = 'Test/PXL_20250310_062246240.jpg'
+
+try:
+    azure_client = initialize_azure_client()
+    print("Azure OCR client initialized successfully.")
+except Exception as e:
+    print(f"Warning: Azure OCR client initialization failed: {str(e)}")
+    azure_client = None
+
+result_images, all_cropped_objects = run_inference_for_image(
+    config_path, model_path, image_path, 
+    azure_client=azure_client,
+    save_result=True, save_dir='Results', 
+    score_thres=CONFIDENCE_THRESHOLD
+)
+
+if all_cropped_objects:
+    image_name, cropped_objects = all_cropped_objects[0]
+    print(f"Displaying {len(cropped_objects)} cropped objects from image: {image_name}")
+    display_crops_with_ocr(cropped_objects)
+    for i, item in enumerate(cropped_objects):
+        if len(item) == 5:
+            _, class_name, score, bbox, ocr_text = item
+        else:
+            _, class_name, score, bbox = item
+        print(f"  {i+1}. Class: {class_name}, Score: {score:.2f}, Size: {bbox[2]-bbox[0]}x{bbox[3]-bbox[1]}px")
+        print(f"     OCR text: {ocr_text if len(item) == 5 else 'OCR not performed'}")
+else:
+    print("No result images available.")

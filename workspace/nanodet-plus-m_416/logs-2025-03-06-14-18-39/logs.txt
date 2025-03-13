@@ -1,0 +1,33 @@
+[NanoDet][03-06 14:18:39]INFO: Setting up data...
+[NanoDet][03-06 14:18:39]INFO: Creating model...
+[NanoDet][03-06 14:18:40]INFO: Weight Averaging is enabled
+[NanoDet][03-06 14:18:42]INFO: Train|Epoch1/100|Iter0(1/294)| mem:4.53G| lr:1.00e-07| loss_qfl:0.7617| loss_bbox:1.0431| loss_dfl:0.5205| aux_loss_qfl:0.6835| aux_loss_bbox:1.0146| aux_loss_dfl:0.5280| 
+[NanoDet][03-06 14:19:05]INFO: Train|Epoch1/100|Iter50(51/294)| mem:4.89G| lr:1.00e-04| loss_qfl:0.6021| loss_bbox:0.8692| loss_dfl:0.4703| aux_loss_qfl:0.2472| aux_loss_bbox:0.5974| aux_loss_dfl:0.3474| 
+[NanoDet][03-06 14:19:26]INFO: Train|Epoch1/100|Iter100(101/294)| mem:4.89G| lr:2.00e-04| loss_qfl:0.2977| loss_bbox:0.5842| loss_dfl:0.3918| aux_loss_qfl:0.2079| aux_loss_bbox:0.4067| aux_loss_dfl:0.2579| 
+[NanoDet][03-06 14:19:48]INFO: Train|Epoch1/100|Iter150(151/294)| mem:4.89G| lr:3.00e-04| loss_qfl:0.3319| loss_bbox:0.5913| loss_dfl:0.3298| aux_loss_qfl:0.2444| aux_loss_bbox:0.4142| aux_loss_dfl:0.2321| 
+[NanoDet][03-06 14:20:10]INFO: Train|Epoch1/100|Iter200(201/294)| mem:4.89G| lr:4.00e-04| loss_qfl:0.2177| loss_bbox:0.5360| loss_dfl:0.3017| aux_loss_qfl:0.1885| aux_loss_bbox:0.3567| aux_loss_dfl:0.2097| 
+[NanoDet][03-06 14:20:32]INFO: Train|Epoch1/100|Iter250(251/294)| mem:4.89G| lr:5.00e-04| loss_qfl:0.2923| loss_bbox:0.4858| loss_dfl:0.2773| aux_loss_qfl:0.2987| aux_loss_bbox:0.3990| aux_loss_dfl:0.2274| 
+[NanoDet][03-06 14:20:55]INFO: Train|Epoch2/100|Iter300(7/294)| mem:4.89G| lr:6.00e-04| loss_qfl:0.3249| loss_bbox:0.4732| loss_dfl:0.2502| aux_loss_qfl:0.2451| aux_loss_bbox:0.4470| aux_loss_dfl:0.2368| 
+[NanoDet][03-06 14:21:18]INFO: Train|Epoch2/100|Iter350(57/294)| mem:4.89G| lr:7.00e-04| loss_qfl:0.1992| loss_bbox:0.4123| loss_dfl:0.2543| aux_loss_qfl:0.1642| aux_loss_bbox:0.3437| aux_loss_dfl:0.2190| 
+[NanoDet][03-06 14:21:40]INFO: Train|Epoch2/100|Iter400(107/294)| mem:4.89G| lr:8.00e-04| loss_qfl:0.2846| loss_bbox:0.3792| loss_dfl:0.2283| aux_loss_qfl:0.1999| aux_loss_bbox:0.3532| aux_loss_dfl:0.2086| 
+[NanoDet][03-06 14:22:02]INFO: Train|Epoch2/100|Iter450(157/294)| mem:4.89G| lr:9.00e-04| loss_qfl:0.2304| loss_bbox:0.3861| loss_dfl:0.2314| aux_loss_qfl:0.1933| aux_loss_bbox:0.3641| aux_loss_dfl:0.2116| 
+[NanoDet][03-06 14:22:24]INFO: Train|Epoch2/100|Iter500(207/294)| mem:4.89G| lr:1.00e-03| loss_qfl:0.2448| loss_bbox:0.3965| loss_dfl:0.2182| aux_loss_qfl:0.1832| aux_loss_bbox:0.3525| aux_loss_dfl:0.2060| 
+[NanoDet][03-06 14:22:47]INFO: Train|Epoch2/100|Iter550(257/294)| mem:4.89G| lr:1.00e-03| loss_qfl:0.2086| loss_bbox:0.3607| loss_dfl:0.2133| aux_loss_qfl:0.1613| aux_loss_bbox:0.3371| aux_loss_dfl:0.2096| 
+[NanoDet][03-06 14:23:10]INFO: Train|Epoch3/100|Iter600(13/294)| mem:4.89G| lr:9.92e-04| loss_qfl:0.1555| loss_bbox:0.3103| loss_dfl:0.2093| aux_loss_qfl:0.1303| aux_loss_bbox:0.2624| aux_loss_dfl:0.1911| 
+[NanoDet][03-06 14:23:32]INFO: Train|Epoch3/100|Iter650(63/294)| mem:4.89G| lr:9.92e-04| loss_qfl:0.1909| loss_bbox:0.3657| loss_dfl:0.2182| aux_loss_qfl:0.1423| aux_loss_bbox:0.3126| aux_loss_dfl:0.1998| 
+[NanoDet][03-06 14:23:55]INFO: Train|Epoch3/100|Iter700(113/294)| mem:4.89G| lr:9.92e-04| loss_qfl:0.1830| loss_bbox:0.3548| loss_dfl:0.2042| aux_loss_qfl:0.1343| aux_loss_bbox:0.3260| aux_loss_dfl:0.1910| 
+[NanoDet][03-06 14:24:17]INFO: Train|Epoch3/100|Iter750(163/294)| mem:4.89G| lr:9.92e-04| loss_qfl:0.2072| loss_bbox:0.4096| loss_dfl:0.2226| aux_loss_qfl:0.1680| aux_loss_bbox:0.3398| aux_loss_dfl:0.2000| 
+[NanoDet][03-06 14:24:39]INFO: Train|Epoch3/100|Iter800(213/294)| mem:4.89G| lr:9.92e-04| loss_qfl:0.2546| loss_bbox:0.3357| loss_dfl:0.2049| aux_loss_qfl:0.2131| aux_loss_bbox:0.3114| aux_loss_dfl:0.1967| 
+[NanoDet][03-06 14:25:01]INFO: Train|Epoch3/100|Iter850(263/294)| mem:4.89G| lr:9.92e-04| loss_qfl:0.1837| loss_bbox:0.3277| loss_dfl:0.2018| aux_loss_qfl:0.1427| aux_loss_bbox:0.2820| aux_loss_dfl:0.1810| 
+[NanoDet][03-06 14:25:25]INFO: Train|Epoch4/100|Iter900(19/294)| mem:4.89G| lr:9.79e-04| loss_qfl:0.2067| loss_bbox:0.3137| loss_dfl:0.1962| aux_loss_qfl:0.1398| aux_loss_bbox:0.2714| aux_loss_dfl:0.1857| 
+[NanoDet][03-06 14:25:48]INFO: Train|Epoch4/100|Iter950(69/294)| mem:4.89G| lr:9.79e-04| loss_qfl:0.1638| loss_bbox:0.2924| loss_dfl:0.1866| aux_loss_qfl:0.1367| aux_loss_bbox:0.2706| aux_loss_dfl:0.1809| 
+[NanoDet][03-06 14:26:11]INFO: Train|Epoch4/100|Iter1000(119/294)| mem:4.89G| lr:9.79e-04| loss_qfl:0.2005| loss_bbox:0.3314| loss_dfl:0.2057| aux_loss_qfl:0.1475| aux_loss_bbox:0.2773| aux_loss_dfl:0.1857| 
+[NanoDet][03-06 14:26:34]INFO: Train|Epoch4/100|Iter1050(169/294)| mem:4.89G| lr:9.79e-04| loss_qfl:0.1650| loss_bbox:0.3373| loss_dfl:0.2005| aux_loss_qfl:0.1459| aux_loss_bbox:0.3001| aux_loss_dfl:0.1950| 
+[NanoDet][03-06 14:26:57]INFO: Train|Epoch4/100|Iter1100(219/294)| mem:4.89G| lr:9.79e-04| loss_qfl:0.2104| loss_bbox:0.3078| loss_dfl:0.1951| aux_loss_qfl:0.1423| aux_loss_bbox:0.3006| aux_loss_dfl:0.1911| 
+[NanoDet][03-06 14:27:20]INFO: Train|Epoch4/100|Iter1150(269/294)| mem:4.89G| lr:9.79e-04| loss_qfl:0.1735| loss_bbox:0.2855| loss_dfl:0.1848| aux_loss_qfl:0.1244| aux_loss_bbox:0.2753| aux_loss_dfl:0.1847| 
+[NanoDet][03-06 14:27:43]INFO: Train|Epoch5/100|Iter1200(25/294)| mem:4.89G| lr:9.61e-04| loss_qfl:0.1887| loss_bbox:0.3084| loss_dfl:0.2094| aux_loss_qfl:0.1698| aux_loss_bbox:0.2915| aux_loss_dfl:0.2024| 
+[NanoDet][03-06 14:28:06]INFO: Train|Epoch5/100|Iter1250(75/294)| mem:4.89G| lr:9.61e-04| loss_qfl:0.1875| loss_bbox:0.3053| loss_dfl:0.1874| aux_loss_qfl:0.1506| aux_loss_bbox:0.3069| aux_loss_dfl:0.1859| 
+[NanoDet][03-06 14:28:28]INFO: Train|Epoch5/100|Iter1300(125/294)| mem:4.89G| lr:9.61e-04| loss_qfl:0.1543| loss_bbox:0.3127| loss_dfl:0.1909| aux_loss_qfl:0.1237| aux_loss_bbox:0.3185| aux_loss_dfl:0.1970| 
+[NanoDet][03-06 14:28:51]INFO: Train|Epoch5/100|Iter1350(175/294)| mem:4.89G| lr:9.61e-04| loss_qfl:0.1826| loss_bbox:0.3509| loss_dfl:0.1994| aux_loss_qfl:0.1474| aux_loss_bbox:0.3315| aux_loss_dfl:0.1940| 
+[NanoDet][03-06 14:29:13]INFO: Train|Epoch5/100|Iter1400(225/294)| mem:4.89G| lr:9.61e-04| loss_qfl:0.1475| loss_bbox:0.3245| loss_dfl:0.1941| aux_loss_qfl:0.1126| aux_loss_bbox:0.2943| aux_loss_dfl:0.1842| 
+[NanoDet][03-06 14:29:35]INFO: Train|Epoch5/100|Iter1450(275/294)| mem:4.89G| lr:9.61e-04| loss_qfl:0.1660| loss_bbox:0.2956| loss_dfl:0.1876| aux_loss_qfl:0.1256| aux_loss_bbox:0.2932| aux_loss_dfl:0.1866| 

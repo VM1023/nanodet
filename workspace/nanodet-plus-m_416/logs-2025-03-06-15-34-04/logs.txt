@@ -1,0 +1,13 @@
+[NanoDet][03-06 15:34:04]INFO: Setting up data...
+[NanoDet][03-06 15:34:04]INFO: Creating model...
+[NanoDet][03-06 15:34:04]INFO: Weight Averaging is enabled
+[NanoDet][03-06 15:34:06]INFO: Train|Epoch1/10|Iter0(1/294)| mem:4.53G| lr:1.00e-07| loss_qfl:0.7364| loss_bbox:0.5082| loss_dfl:0.5242| aux_loss_qfl:0.7080| aux_loss_bbox:0.5052| aux_loss_dfl:0.5412| 
+[NanoDet][03-06 15:34:30]INFO: Train|Epoch1/10|Iter50(51/294)| mem:4.88G| lr:1.00e-04| loss_qfl:0.4882| loss_bbox:0.4373| loss_dfl:0.4337| aux_loss_qfl:0.2280| aux_loss_bbox:0.3061| aux_loss_dfl:0.3359| 
+[NanoDet][03-06 15:34:54]INFO: Train|Epoch1/10|Iter100(101/294)| mem:4.88G| lr:2.00e-04| loss_qfl:0.3665| loss_bbox:0.3789| loss_dfl:0.3770| aux_loss_qfl:0.2555| aux_loss_bbox:0.2082| aux_loss_dfl:0.2420| 
+[NanoDet][03-06 15:35:17]INFO: Train|Epoch1/10|Iter150(151/294)| mem:4.88G| lr:3.00e-04| loss_qfl:0.3066| loss_bbox:0.2879| loss_dfl:0.3238| aux_loss_qfl:0.2671| aux_loss_bbox:0.1984| aux_loss_dfl:0.2291| 
+[NanoDet][03-06 15:35:40]INFO: Train|Epoch1/10|Iter200(201/294)| mem:4.88G| lr:4.00e-04| loss_qfl:0.2162| loss_bbox:0.2444| loss_dfl:0.2785| aux_loss_qfl:0.1818| aux_loss_bbox:0.1820| aux_loss_dfl:0.2114| 
+[NanoDet][03-06 15:36:02]INFO: Train|Epoch1/10|Iter250(251/294)| mem:4.89G| lr:5.00e-04| loss_qfl:0.2116| loss_bbox:0.2948| loss_dfl:0.2930| aux_loss_qfl:0.1763| aux_loss_bbox:0.2103| aux_loss_dfl:0.2225| 
+[NanoDet][03-06 15:36:26]INFO: Train|Epoch2/10|Iter300(7/294)| mem:4.89G| lr:6.00e-04| loss_qfl:0.2382| loss_bbox:0.2250| loss_dfl:0.2581| aux_loss_qfl:0.1978| aux_loss_bbox:0.1705| aux_loss_dfl:0.2083| 
+[NanoDet][03-06 15:36:50]INFO: Train|Epoch2/10|Iter350(57/294)| mem:4.89G| lr:7.00e-04| loss_qfl:0.2259| loss_bbox:0.2490| loss_dfl:0.2578| aux_loss_qfl:0.1688| aux_loss_bbox:0.1933| aux_loss_dfl:0.2128| 
+[NanoDet][03-06 15:37:12]INFO: Train|Epoch2/10|Iter400(107/294)| mem:4.89G| lr:8.00e-04| loss_qfl:0.1971| loss_bbox:0.2389| loss_dfl:0.2521| aux_loss_qfl:0.1882| aux_loss_bbox:0.2008| aux_loss_dfl:0.2227| 
+[NanoDet][03-06 15:37:35]INFO: Train|Epoch2/10|Iter450(157/294)| mem:4.89G| lr:9.00e-04| loss_qfl:0.1642| loss_bbox:0.1799| loss_dfl:0.2145| aux_loss_qfl:0.1470| aux_loss_bbox:0.1560| aux_loss_dfl:0.1905| 

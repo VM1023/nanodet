@@ -1,0 +1,6 @@
+[NanoDet][03-06 14:15:45]INFO: Setting up data...
+[NanoDet][03-06 14:15:45]INFO: Creating model...
+[NanoDet][03-06 14:15:45]INFO: Weight Averaging is enabled
+[NanoDet][03-06 14:15:47]INFO: Train|Epoch1/100|Iter0(1/16)| mem:4.53G| lr:1.00e-07| loss_qfl:0.6153| loss_bbox:1.1588| loss_dfl:0.5248| aux_loss_qfl:0.5177| aux_loss_bbox:1.1749| aux_loss_dfl:0.5538| 
+[NanoDet][03-06 14:16:14]INFO: Train|Epoch4/100|Iter50(3/16)| mem:4.88G| lr:1.00e-04| loss_qfl:0.5416| loss_bbox:0.9693| loss_dfl:0.4802| aux_loss_qfl:0.2106| aux_loss_bbox:0.7034| aux_loss_dfl:0.3704| 
+[NanoDet][03-06 14:16:39]INFO: Train|Epoch7/100|Iter100(5/16)| mem:4.88G| lr:2.00e-04| loss_qfl:0.2945| loss_bbox:0.7147| loss_dfl:0.3998| aux_loss_qfl:0.2189| aux_loss_bbox:0.5114| aux_loss_dfl:0.2844| 

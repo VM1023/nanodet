@@ -1,0 +1,1 @@
+[NanoDet][03-06 14:52:15]INFO: Weight Averaging is enabled

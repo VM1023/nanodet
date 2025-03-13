@@ -1,10 +1,11 @@
-import argparse
 import os
 import time
-
 import cv2
 import torch
-
+import argparse
+import multiprocessing
+import sys
+import numpy as np
 from nanodet.data.batch_process import stack_batch_img
 from nanodet.data.collate import naive_collate
 from nanodet.data.transform import Pipeline
@@ -13,145 +14,141 @@ from nanodet.util import Logger, cfg, load_config, load_model_weight
 from nanodet.util.path import mkdir
 
 image_ext = [".jpg", ".jpeg", ".webp", ".bmp", ".png"]
-video_ext = ["mp4", "mov", "avi", "mkv"]
-
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "demo", default="image", help="demo type, eg. image, video and webcam"
-    )
-    parser.add_argument("--config", help="model config file path")
-    parser.add_argument("--model", help="model file path")
-    parser.add_argument("--path", default="./demo", help="path to images or video")
-    parser.add_argument("--camid", type=int, default=0, help="webcam demo camera id")
-    parser.add_argument(
-        "--save_result",
-        action="store_true",
-        help="whether to save the inference result of image/video",
-    )
-    args = parser.parse_args()
-    return args
+    parser.add_argument("--config", required=True, help="Model config file path")
+    parser.add_argument("--model", required=True, help="Model file path")
+    parser.add_argument("--path", default="./demo", help="Path to image or folder")
+    parser.add_argument("--cpu", action="store_true", help="Use CPU instead of CUDA")
+    parser.add_argument("--timeout", type=int, default=300, help="Timeout in seconds")
+    return parser.parse_args()
 
-
-class Predictor(object):
+class Predictor:
     def __init__(self, cfg, model_path, logger, device="cuda:0"):
         self.cfg = cfg
-        self.device = device
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() and device.startswith("cuda") else "cpu")
+        
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Model file '{model_path}' not found.")
+        
         model = build_model(cfg.model)
-        ckpt = torch.load(model_path, map_location=lambda storage, loc: storage)
+        ckpt = torch.load(model_path, map_location=self.device)
         load_model_weight(model, ckpt, logger)
-        if cfg.model.arch.backbone.name == "RepVGG":
-            deploy_config = cfg.model
-            deploy_config.arch.backbone.update({"deploy": True})
-            deploy_model = build_model(deploy_config)
-            from nanodet.model.backbone.repvgg import repvgg_det_model_convert
-
-            model = repvgg_det_model_convert(model, deploy_model)
-        self.model = model.to(device).eval()
+        self.model = model.to(self.device).eval()
         self.pipeline = Pipeline(cfg.data.val.pipeline, cfg.data.val.keep_ratio)
 
     def inference(self, img):
-        img_info = {"id": 0}
-        if isinstance(img, str):
-            img_info["file_name"] = os.path.basename(img)
-            img = cv2.imread(img)
-        else:
-            img_info["file_name"] = None
-
-        height, width = img.shape[:2]
-        img_info["height"] = height
-        img_info["width"] = width
-        meta = dict(img_info=img_info, raw_img=img, img=img)
+        if not os.path.exists(img):
+            print(f"Error: Image path '{img}' does not exist.")
+            return None, None
+        
+        img_data = cv2.imread(img)
+        if img_data is None:
+            print(f"Error: Failed to load image '{img}'.")
+            return None, None
+        
+        img_info = {"id": 0, "file_name": os.path.basename(img), "height": img_data.shape[0], "width": img_data.shape[1]}
+        meta = {"img_info": img_info, "raw_img": img_data, "img": img_data}
         meta = self.pipeline(None, meta, self.cfg.data.val.input_size)
         meta["img"] = torch.from_numpy(meta["img"].transpose(2, 0, 1)).to(self.device)
         meta = naive_collate([meta])
         meta["img"] = stack_batch_img(meta["img"], divisible=32)
+        
         with torch.no_grad():
             results = self.model.inference(meta)
+        
         return meta, results
 
-    def visualize(self, dets, meta, class_names, score_thres, wait=0):
-        time1 = time.time()
-        result_img = self.model.head.show_result(
-            meta["raw_img"][0], dets, class_names, score_thres=score_thres, show=True
-        )
-        print("viz time: {:.3f}s".format(time.time() - time1))
-        return result_img
+    def visualize(self, dets, meta, class_names, score_thres=0.6, timeout_seconds=300):
+        try:
+            result_img = self.model.head.show_result(meta["raw_img"][0], dets, class_names, score_thres=score_thres, show=False)
+            
+            cv2.imshow("Detection Result", result_img)
+            start_time = time.time()
+            while True:
+                if cv2.waitKey(100) != -1 or time.time() - start_time > timeout_seconds:
+                    break
+                time.sleep(0.1)
+            cv2.destroyAllWindows()
+            return result_img
+        except Exception as e:
+            print(f"Visualization error: {e}")
+            return None
 
+def run_inference_for_image(config_path, model_path, image_path, save_result=False, save_dir='./demo_results'):
+    load_config(cfg, config_path)
+    logger = Logger(local_rank=0, use_tensorboard=False)
+    predictor = Predictor(cfg, model_path, logger, device="cuda:0")
+    image_names = get_image_list(image_path)
+    image_names.sort()
+    
+    if save_result:
+        mkdir(local_rank=0, path=save_dir)
+    
+    result_images = []
+    for image_name in image_names:
+        meta, res = predictor.inference(image_name)
+        if meta and res:
+            result_image = predictor.visualize(res[0], meta, cfg.class_names, 0.35)
+            if save_result:
+                save_file_name = os.path.join(save_dir, os.path.basename(image_name))
+                cv2.imwrite(save_file_name, result_image)
+            result_images.append(result_image)
+    return result_images
 
 def get_image_list(path):
     image_names = []
-    for maindir, subdir, file_name_list in os.walk(path):
-        for filename in file_name_list:
-            apath = os.path.join(maindir, filename)
-            ext = os.path.splitext(apath)[1]
-            if ext in image_ext:
-                image_names.append(apath)
+    if os.path.isdir(path):
+        for maindir, subdir, file_name_list in os.walk(path):
+            for filename in file_name_list:
+                apath = os.path.join(maindir, filename)
+                ext = os.path.splitext(apath)[1]
+                if ext in image_ext:
+                    image_names.append(apath)
+    else:
+        image_names.append(path)
     return image_names
 
+def run_detection(args):
+    try:
+        device = "cpu" if args.cpu else "cuda:0"
+        load_config(cfg, args.config)
+        logger = Logger(0, use_tensorboard=False)
+        predictor = Predictor(cfg, args.model, logger, device=device)
+        
+        if os.path.isfile(args.path):
+            print(f"Running inference on {args.path}...")
+            meta, res = predictor.inference(args.path)
+            if meta and res:
+                predictor.visualize(res[0], meta, cfg.class_names, 0.6, args.timeout)
+    except Exception as e:
+        print(f"Error in detection process: {e}")
+    finally:
+        sys.exit(0)
 
-def main():
-    args = parse_args()
-    local_rank = 0
-    torch.backends.cudnn.enabled = True
-    torch.backends.cudnn.benchmark = True
-
-    load_config(cfg, args.config)
-    logger = Logger(local_rank, use_tensorboard=False)
-    predictor = Predictor(cfg, args.model, logger, device="cuda:0")
-    logger.log('Press "Esc", "q" or "Q" to exit.')
-    current_time = time.localtime()
-    if args.demo == "image":
-        if os.path.isdir(args.path):
-            files = get_image_list(args.path)
-        else:
-            files = [args.path]
-        files.sort()
-        for image_name in files:
-            meta, res = predictor.inference(image_name)
-            result_image = predictor.visualize(res[0], meta, cfg.class_names, 0.35)
-            if args.save_result:
-                save_folder = os.path.join(
-                    cfg.save_dir, time.strftime("%Y_%m_%d_%H_%M_%S", current_time)
-                )
-                mkdir(local_rank, save_folder)
-                save_file_name = os.path.join(save_folder, os.path.basename(image_name))
-                cv2.imwrite(save_file_name, result_image)
-            ch = cv2.waitKey(0)
-            if ch == 27 or ch == ord("q") or ch == ord("Q"):
-                break
-    elif args.demo == "video" or args.demo == "webcam":
-        cap = cv2.VideoCapture(args.path if args.demo == "video" else args.camid)
-        width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)  # float
-        height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)  # float
-        fps = cap.get(cv2.CAP_PROP_FPS)
-        save_folder = os.path.join(
-            cfg.save_dir, time.strftime("%Y_%m_%d_%H_%M_%S", current_time)
-        )
-        mkdir(local_rank, save_folder)
-        save_path = (
-            os.path.join(save_folder, args.path.replace("\\", "/").split("/")[-1])
-            if args.demo == "video"
-            else os.path.join(save_folder, "camera.mp4")
-        )
-        print(f"save_path is {save_path}")
-        vid_writer = cv2.VideoWriter(
-            save_path, cv2.VideoWriter_fourcc(*"mp4v"), fps, (int(width), int(height))
-        )
-        while True:
-            ret_val, frame = cap.read()
-            if ret_val:
-                meta, res = predictor.inference(frame)
-                result_frame = predictor.visualize(res[0], meta, cfg.class_names, 0.35)
-                if args.save_result:
-                    vid_writer.write(result_frame)
-                ch = cv2.waitKey(1)
-                if ch == 27 or ch == ord("q") or ch == ord("Q"):
-                    break
-            else:
-                break
-
+def monitor_process(timeout_seconds):
+    start_time = time.time()
+    while time.time() - start_time <= timeout_seconds + 30:
+        time.sleep(0.5)
+    os._exit(0)
 
 if __name__ == "__main__":
-    main()
+    multiprocessing.freeze_support()
+    args = parse_args()
+    
+    print(f"Starting object detection with {args.timeout} second timeout...")
+    
+    detection_p = multiprocessing.Process(target=run_detection, args=(args,))
+    detection_p.start()
+    
+    monitor_p = multiprocessing.Process(target=monitor_process, args=(args.timeout,))
+    monitor_p.daemon = True
+    monitor_p.start()
+    
+    detection_p.join(timeout=args.timeout + 60)
+    if detection_p.is_alive():
+        detection_p.terminate()
+    
+    print("Object detection completed.")
+    sys.exit(0)
