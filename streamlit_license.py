@@ -27,8 +27,8 @@ SAVE_DIR = 'Results'
 SAVE_RESULTS = True
 
 def initialize_azure_client():
-    api_key = os.getenv("AZURE_API_KEY")
-    endpoint = os.getenv("AZURE_ENDPOINT")
+    api_key = st.secrets["AZURE_API_KEY"]
+    endpoint = st.secrets["AZURE_ENDPOINT"]
     if not api_key or not endpoint:
         raise ValueError("Azure API Key or Endpoint is missing!")
     return ComputerVisionClient(endpoint, CognitiveServicesCredentials(api_key))
