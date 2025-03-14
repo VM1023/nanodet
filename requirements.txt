@@ -17,3 +17,5 @@ torchmetrics
 torchvision
 tqdm
 streamlit
+azure-cognitiveservices-vision-computervision
+msrest
