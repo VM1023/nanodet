@@ -232,7 +232,7 @@ def display_side_by_side(original_image, cropped_objects):
 def main():
     st.set_page_config(page_title="NanoDet Object Detection with OCR", layout="wide")
     
-    st.title("NanoDet Object Detection with Azure OCR")
+    st.title("License Plate Detection with OCR")
     st.write("Upload an image or use your camera to detect objects and perform OCR on license plates")
     
     # Simplified sidebar with only confidence threshold
